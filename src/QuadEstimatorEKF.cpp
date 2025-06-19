@@ -71,6 +71,14 @@ void QuadEstimatorEKF::Init()
   posErrorMag = velErrorMag = 0;
 }
 
+float normalizeAngleRadians(float angle) {
+    angle = std::fmod(angle + F_PI, 2. * F_PI);
+    if (angle < 0) {
+        angle += 2. * F_PI;
+    }
+    return angle - F_PI;
+}
+
 void QuadEstimatorEKF::UpdateFromIMU(V3F accel, V3F gyro)
 {
   // Improve a complementary filter-type attitude filter
@@ -93,13 +101,13 @@ void QuadEstimatorEKF::UpdateFromIMU(V3F accel, V3F gyro)
   // (replace the code below)
   // make sure you comment it out when you add your own code -- otherwise e.g. you might integrate yaw twice
 
-  float predictedPitch = pitchEst + dtIMU * gyro.y;
-  float predictedRoll = rollEst + dtIMU * gyro.x;
-  ekfState(6) = ekfState(6) + dtIMU * gyro.z;	// yaw
-
-  // normalize yaw to -pi .. pi
-  if (ekfState(6) > F_PI) ekfState(6) -= 2.f*F_PI;
-  if (ekfState(6) < -F_PI) ekfState(6) += 2.f*F_PI;
+    auto& yaw = ekfState(6);
+    auto attitude_qt = Quaternion<float>::FromEuler123_RPY(rollEst, pitchEst, yaw);
+    attitude_qt.IntegrateBodyRate(gyro, dtIMU);
+    
+    auto const predictedPitch{attitude_qt.Pitch()};
+    auto const predictedRoll{attitude_qt.Roll()};
+    yaw = normalizeAngleRadians(attitude_qt.Yaw());
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
