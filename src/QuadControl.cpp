@@ -264,30 +264,18 @@ V3F QuadControl::LateralPositionControl(V3F posCmd, V3F velCmd, V3F pos, V3F vel
     V3F accelCmd = accelCmdFF;
 
     ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-    /*
-     x_error = x_target - x_actual
-     y_error = y_target - y_actual
+    velCmd += kpPosXY * (posCmd - pos);
 
-     x_dot_error = x_dot_target - x_dot_actual
-     y_dot_error = y_dot_target - y_dot_actual
+    if (velCmd.mag() > maxSpeedXY)
+    {
+        velCmd = velCmd * maxSpeedXY / velCmd.mag();
+    }
 
-     x = self.x_k_p * x_error + self.x_k_d * x_dot_error + x_dot_dot_target
-     y = self.y_k_p * y_error + self.y_k_d * y_dot_error + y_dot_dot_target
-
-     return x/c,y/c
-     */
-    auto x_error = posCmd.x - pos.x;
-    auto y_error = posCmd.y - pos.y;
-
-    auto x_dot_error = velCmd.x - vel.x;
-    auto y_dot_error = velCmd.y - vel.y;
-
-    auto x = x_error * this->kpPosXY + x_dot_error * this->kpVelXY;
-    auto y = y_error * this->kpPosXY + y_dot_error * this->kpVelXY;
-
-    accelCmd.x += x;
-    accelCmd.y += y;
-    accelCmd.z = 0.0f;
+    accelCmd += kpVelXY * (velCmd - vel);
+    if (accelCmd.mag() > maxAccelXY)
+    {
+        accelCmd = accelCmd * maxAccelXY / accelCmd.mag();
+    }
     /////////////////////////////// END STUDENT CODE ////////////////////////////
 
     return accelCmd;
@@ -308,7 +296,11 @@ float QuadControl::YawControl(float yawCmd, float yaw)
 
     float yawRateCmd = 0;
     ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-    auto yaw_error = fmodf(yawCmd, 2 * F_PI) - yaw;
+    auto yaw_error = std::fmod(yawCmd - yaw + F_PI, 2. * F_PI);
+    if (yaw_error < 0) {
+        yaw_error += 2. * F_PI;
+    }
+    yaw_error -= F_PI;
     yawRateCmd = yaw_error * this->kpYaw;
     /////////////////////////////// END STUDENT CODE ////////////////////////////
 

@@ -17,22 +17,22 @@ Izz = 0.0046
 kappa = 0.016
 minMotorThrust = .1
 maxMotorThrust = 4.5
- 
+
 # Position control gains
-kpPosXY = 17
-kpPosZ = 20
-KiPosZ = 1
+kpPosXY = 2
+kpPosZ = 2
+KiPosZ = 50
 
 # Velocity control gains
-kpVelXY = 7
-kpVelZ = 10
+kpVelXY = 8
+kpVelZ = 8
 
 # Angle control gains
-kpBank = 15
+kpBank = 12
 kpYaw = 3
 
 # Angle rate gains
-kpPQR = 75, 75, 40
+kpPQR = 70, 70, 15
 
 # limits
 maxAscentRate = 5
